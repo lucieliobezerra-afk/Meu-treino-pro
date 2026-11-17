@@ -39,8 +39,13 @@ input,select{background:#0c1728;border:1px solid #344966;border-radius:10px;colo
 <section id="workouts" class="view">
  <div class="eyebrow">PLANEJAMENTO</div><div class="headline">Minhas fichas</div>
  <div class="notice">Plano personalizado de 4 dias, com sessões de aproximadamente 50–60 minutos. Ajuste os exercícios conforme os equipamentos disponíveis e sua recuperação.</div>
+ <div class="card">
+  <div class="eyebrow">GERADOR INTELIGENTE</div><b>Montar uma ficha pelo meu perfil</b>
+  <p class="muted small">O app distribui os exercícios nos 4 dias, dá mais atenção às suas prioridades e mantém as fichas editáveis.</p>
+  <button class="btn full" onclick="generatePersonalPlan()">✦ Gerar meu treino personalizado</button>
+ </div>
  <div id="workoutList"></div>
- <button class="btn full" style="margin:12px 0" onclick="createWorkout()">＋ Criar meu treino</button><div class="notice">Você pode começar com uma ficha vazia, adicionar os exercícios que quiser e alterar nome, séries, repetições e grupos musculares quando precisar.</div>
+ <button class="btn secondary full" style="margin:12px 0" onclick="createWorkout()">＋ Criar meu treino manualmente</button><div class="notice">Você pode começar com uma ficha vazia, adicionar os exercícios que quiser e alterar nome, séries, repetições e grupos musculares quando precisar.</div>
 </section>
 <section id="session" class="view">
  <div class="row"><button class="btn ghost" onclick="show('workouts')">← Voltar</button><span class="pill" id="sessionTag">TREINO</span></div>
@@ -116,6 +121,50 @@ function saveProfile(){let priorities=[...document.querySelectorAll('.profilePri
 function saveSettings(){data.settings.name=document.getElementById('userName').value;data.settings.goal=Number(document.getElementById('weeklyGoal').value);data.settings.objective=document.getElementById('goal').value;persist();alert('Preferências salvas!');}
 function esc(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function findWorkout(id){return data.plan.find(w=>String(w.id)===String(id));}
+function generatePersonalPlan(){
+ const p=data.settings.profile||{};
+ const days=Number(p.frequency||4);
+ if(days!==4){alert('Este gerador está configurado para sua divisão atual de 4 dias. Ajuste a frequência do perfil para 4 dias para gerar esta ficha.');return;}
+ const priorities=p.priorities||['Pernas','Peitoral superior','Ombros e braços'];
+ const has=x=>priorities.includes(x);
+ const sets=(base,group)=>String(base+(has(group)?1:0));
+ const make=(name,desc,items)=>({id:name.split(' ')[1],name,desc,items});
+ const plan=[
+ make('Treino A — Superior 1','Peitoral superior, costas, ombros e braços',[
+ ['Supino inclinado com barra','Peitoral superior',sets(3,'Peitoral superior'),'8–10'],
+ ['Puxada alta aberta','Costas',sets(3,'Costas'),'8–12'],
+ ['Crucifixo no cross','Peito',sets(2,'Peitoral superior'),'10–12'],
+ ['Elevação lateral','Ombros',sets(3,'Ombros e braços'),'12–15'],
+ ['Tríceps na polia','Tríceps',sets(2,'Ombros e braços'),'10–12'],
+ ['Rosca inclinada','Bíceps',sets(2,'Ombros e braços'),'8–12']]),
+ make('Treino B — Inferior 1','Ênfase em quadríceps, glúteos e panturrilhas',[
+ ['Agachamento no Smith','Quadríceps e glúteos',sets(3,'Pernas'),'8–10'],
+ ['Leg press','Quadríceps',sets(3,'Pernas'),'10–12'],
+ ['Cadeira extensora','Quadríceps',sets(2,'Pernas'),'12–15'],
+ ['Mesa flexora','Posterior de coxa',sets(3,'Pernas'),'10–12'],
+ ['Panturrilha no leg press','Panturrilhas',sets(3,'Pernas'),'12–15']]),
+ make('Treino C — Superior 2','Costas, peitoral superior, ombros e braços',[
+ ['Remada baixa','Costas',sets(3,'Costas'),'8–12'],
+ ['Puxada neutra fechada','Costas',sets(2,'Costas'),'10–12'],
+ ['Supino inclinado com halteres','Peitoral superior',sets(3,'Peitoral superior'),'8–10'],
+ ['Elevação lateral','Ombros',sets(2,'Ombros e braços'),'12–15'],
+ ['Rosca Scott','Bíceps',sets(2,'Ombros e braços'),'10–12'],
+ ['Tríceps corda','Tríceps',sets(2,'Ombros e braços'),'10–12']]),
+ make('Treino D — Inferior 2','Ênfase em posterior, glúteos e desenvolvimento completo das pernas',[
+ ['Stiff com halteres','Posterior e glúteos',sets(3,'Pernas'),'8–10'],
+ ['Mesa flexora','Posterior de coxa',sets(3,'Pernas'),'10–12'],
+ ['Leg press com pés em posição confortável','Quadríceps e glúteos',sets(3,'Pernas'),'10–12'],
+ ['Cadeira extensora','Quadríceps',sets(2,'Pernas'),'12–15'],
+ ['Panturrilha em pé','Panturrilhas',sets(3,'Pernas'),'12–15']])
+ ];
+ const priorityText=priorities.join(', ');
+ if(!confirm('Gerar uma nova ficha de 4 dias com prioridade em: '+priorityText+'?\n\nSuas fichas atuais serão substituídas. O histórico de treinos e pesos será preservado.'))return;
+ data.plan=plan;
+ data.settings.generatedFromProfile=new Date().toISOString();
+ persist();
+ alert('Sua ficha personalizada foi gerada! Você pode editar, excluir ou trocar qualquer exercício.');
+ show('workouts');
+}
 function createWorkout(){
  let name=prompt('Qual será o nome do seu novo treino?','Meu treino');if(name===null||!name.trim())return;
  let desc=prompt('Qual é o foco deste treino?','Treino personalizado')??'';
