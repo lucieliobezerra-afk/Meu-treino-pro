@@ -40,7 +40,7 @@ input,select{background:#0c1728;border:1px solid #344966;border-radius:10px;colo
  <div class="eyebrow">PLANEJAMENTO</div><div class="headline">Minhas fichas</div>
  <div class="notice">Plano inicial de 3 dias, com sessões de aproximadamente 50–60 minutos. Ajuste os exercícios conforme os equipamentos disponíveis e sua recuperação.</div>
  <div id="workoutList"></div>
- <button class="btn secondary full" onclick="editPlan()">Editar nome dos treinos</button>
+ <button class="btn full" style="margin:12px 0" onclick="createWorkout()">＋ Criar meu treino</button><div class="notice">Você pode começar com uma ficha vazia, adicionar os exercícios que quiser e alterar nome, séries, repetições e grupos musculares quando precisar.</div>
 </section>
 <section id="session" class="view">
  <div class="row"><button class="btn ghost" onclick="show('workouts')">← Voltar</button><span class="pill" id="sessionTag">TREINO</span></div>
@@ -88,7 +88,7 @@ function finishWorkout(){if(!current)return;current.items.forEach((it,i)=>{if(!c
 function render(){let n=data.logs.length;document.getElementById('sessionsStat').textContent=n;document.getElementById('totalSessions').textContent=n;let wt=data.weights[0];document.getElementById('weightStat').textContent=wt?wt.value.toFixed(1):'—';document.getElementById('latestWeight').textContent=wt?wt.value.toFixed(1)+' kg':'—';let next=nextWorkout();document.getElementById('nextName').textContent=next?next.name:'Configure sua ficha';document.getElementById('nextInfo').textContent=next?next.desc:'';
  document.getElementById('todayLabel').textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'}).format(new Date()).toUpperCase();
  let wk=document.getElementById('weekCard');let count=data.logs.filter(x=>Date.now()-new Date(x.date).getTime()<7*86400000).length;let goal=Number(data.settings.goal||3);wk.innerHTML=`<div class="row"><b>${count} de ${goal} treinos</b><span class="muted small">últimos 7 dias</span></div><div class="bar"><i style="width:${Math.min(100,count/goal*100)}%"></i></div>`;
- document.getElementById('workoutList').innerHTML=data.plan.map(w=>`<div class="card"><div class="row"><div><div class="eyebrow">TREINO ${w.id}</div><b>${w.name}</b><div class="muted small">${w.desc}</div></div><span class="pill">${w.items.length} exercícios</span></div><div style="margin-top:8px">${w.items.map(x=>`<div class="workout"><div><b>${x[0]}</b><div class="muted small">${x[1]}</div></div><span class="pill">${x[2]} × ${x[3]}</span></div>`).join('')}</div><button class="btn full" onclick="openWorkout(data.plan.find(x=>x.id==='${w.id}'))">Iniciar treino ${w.id}</button></div>`).join('');
+ document.getElementById('workoutList').innerHTML=data.plan.map(w=>`<div class="card"><div class="row"><div><div class="eyebrow">TREINO ${esc(w.id)}</div><b>${esc(w.name)}</b><div class="muted small">${esc(w.desc)}</div></div><span class="pill">${w.items.length} exercícios</span></div><div style="margin-top:8px">${w.items.map((x,i)=>`<div class="workout"><div style="flex:1;min-width:0"><b>${esc(x[0])}</b><div class="muted small">${esc(x[1])}</div></div><div style="text-align:right"><span class="pill">${esc(x[2])} × ${esc(x[3])}</span><div style="margin-top:5px"><button class="btn ghost" onclick="editExercise(\'${w.id}\',${i})">Editar</button><button class="btn ghost danger" onclick="removeExercise(\'${w.id}\',${i})">Excluir</button></div></div></div>`).join('')}</div><div class="grid" style="margin-top:10px"><button class="btn secondary" onclick="editWorkout(\'${w.id}\')">Editar ficha</button><button class="btn secondary" onclick="addExercise(\'${w.id}\')">＋ Exercício</button></div><button class="btn full" style="margin-top:8px" onclick="openWorkout(data.plan.find(x=>x.id===\'${w.id}\'))">Iniciar treino ${esc(w.id)}</button><button class="btn ghost danger full" onclick="deleteWorkout(\'${w.id}\')">Excluir treino</button></div>`).join('');
  document.getElementById('weightHistory').innerHTML=data.weights.length?data.weights.slice(0,12).map(x=>`<div class="listitem row"><span>${new Date(x.date).toLocaleDateString('pt-BR')}</span><b>${x.value.toFixed(1)} kg</b></div>`).join(''):'<div class="empty">Registre seu peso para acompanhar a evolução.</div>';
  document.getElementById('history').innerHTML=data.logs.length?data.logs.slice(0,10).map(x=>`<div class="listitem"><div class="row"><b>${x.name}</b><span class="muted small">${new Date(x.date).toLocaleDateString('pt-BR')}</span></div><div class="muted small">${x.entries.filter(e=>e.done).length} exercícios marcados como concluídos</div></div>`).join(''):'<div class="empty">Seus treinos finalizados aparecerão aqui.</div>';
  document.getElementById('userName').value=data.settings.name||'';document.getElementById('weeklyGoal').value=String(data.settings.goal||3);document.getElementById('goal').value=data.settings.objective||'Ganhar massa muscular e reduzir gordura';
@@ -96,6 +96,46 @@ function render(){let n=data.logs.length;document.getElementById('sessionsStat')
 function saveWeight(){let v=parseFloat(document.getElementById('weightInput').value.replace(',','.'));if(!v||v<30||v>300){alert('Digite um peso válido em kg.');return}data.weights.unshift({value:v,date:new Date().toISOString()});document.getElementById('weightInput').value='';persist();}
 function quickWeight(){show('progress');document.getElementById('weightInput').focus();}
 function saveSettings(){data.settings={name:document.getElementById('userName').value,goal:Number(document.getElementById('weeklyGoal').value),objective:document.getElementById('goal').value};persist();alert('Preferências salvas!');}
+function esc(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function findWorkout(id){return data.plan.find(w=>String(w.id)===String(id));}
+function createWorkout(){
+ let name=prompt('Qual será o nome do seu novo treino?','Meu treino');if(name===null||!name.trim())return;
+ let desc=prompt('Qual é o foco deste treino?','Treino personalizado')??'';
+ let id='T'+Date.now();data.plan.push({id,name:name.trim(),desc:desc.trim(),items:[]});persist();
+ alert('Ficha criada! Agora toque em ＋ Exercício para montar seu treino.');
+}
+function editWorkout(id){
+ let w=findWorkout(id);if(!w)return;
+ let name=prompt('Nome do treino:',w.name);if(name===null||!name.trim())return;
+ let desc=prompt('Descrição ou foco do treino:',w.desc);if(desc===null)return;
+ w.name=name.trim();w.desc=desc.trim();persist();
+}
+function addExercise(id){
+ let w=findWorkout(id);if(!w)return;
+ let name=prompt('Nome do exercício:');if(!name||!name.trim())return;
+ let group=prompt('Grupo muscular:', 'Grupo muscular')??'';
+ let sets=prompt('Quantas séries?', '3');if(sets===null)return;
+ let reps=prompt('Faixa de repetições (ex.: 8–12):','8–12');if(reps===null)return;
+ let n=Math.max(1,Math.min(10,parseInt(sets,10)||3));
+ w.items.push([name.trim(),group.trim(),String(n),reps.trim()||'8–12']);persist();
+}
+function editExercise(id,index){
+ let w=findWorkout(id),x=w?.items[index];if(!x)return;
+ let name=prompt('Nome do exercício:',x[0]);if(name===null||!name.trim())return;
+ let group=prompt('Grupo muscular:',x[1]);if(group===null)return;
+ let sets=prompt('Número de séries:',x[2]);if(sets===null)return;
+ let reps=prompt('Faixa de repetições:',x[3]);if(reps===null)return;
+ x[0]=name.trim();x[1]=group.trim();x[2]=String(Math.max(1,Math.min(10,parseInt(sets,10)||1)));x[3]=reps.trim();persist();
+}
+function removeExercise(id,index){
+ let w=findWorkout(id);if(!w||!w.items[index])return;
+ if(confirm('Remover este exercício da ficha?')){w.items.splice(index,1);persist();}
+}
+function deleteWorkout(id){
+ let w=findWorkout(id);if(!w)return;
+ if(data.plan.length<=1){alert('Mantenha pelo menos um treino cadastrado.');return;}
+ if(confirm('Excluir a ficha "'+w.name+'"? Os registros de treinos já concluídos serão mantidos.')){data.plan=data.plan.filter(x=>String(x.id)!==String(id));persist();}
+}
 function editPlan(){let names=data.plan.map(w=>w.name);let changed=prompt('Digite os nomes dos treinos separados por ponto e vírgula:',names.join('; '));if(changed){let a=changed.split(';').map(x=>x.trim());if(a.length===data.plan.length)data.plan.forEach((w,i)=>w.name=a[i]);persist();}}
 function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='meu-treino-pro-backup.json';a.click();URL.revokeObjectURL(a.href);}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.plan||!d.logs||!d.weights)throw 0;data=d;persist();alert('Backup restaurado!')}catch{alert('Arquivo de backup inválido.')}};r.readAsText(f);}
