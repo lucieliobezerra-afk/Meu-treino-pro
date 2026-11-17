@@ -147,7 +147,8 @@ function generatePersonalPlan(){
  const base=level==='iniciante'?2:level==='avancado'?3:3;
  const reps=goal==='Condicionamento físico'?'12–15':goal==='Emagrecimento e definição'?'10–15':'8–12';
  const has=x=>priorities.includes(x);
- const ex=(name,group,sets=base,range=reps)=>[name,group,String(Math.min(4,sets+(has(group==='Peitoral superior'?'Peitoral superior':/Quadríceps|Posterior|glúteos|Panturrilhas/.test(group)?'Pernas':/Ombros|Bíceps|Tríceps/.test(group)?'Ombros e braços':group==='Costas'?'Costas':group==='Abdômen'?'Abdômen':'')?1:0)),range];
+ const keyFor=group=>group==='Peitoral superior'?'Peitoral superior':/Quadríceps|Posterior|glúteos|Panturrilhas/.test(group)?'Pernas':/Ombros|Bíceps|Tríceps/.test(group)?'Ombros e braços':group==='Costas'?'Costas':group==='Abdômen'?'Abdômen':'';
+ const ex=(name,group,sets=base,range=reps)=>[name,group,String(Math.min(4,sets+(has(keyFor(group))?1:0))),range];
  const chest=()=>[ex('Supino inclinado com barra','Peitoral superior'),ex('Crucifixo no cross','Peito',2)];
  const back=()=>[ex('Puxada alta aberta','Costas'),ex('Remada baixa','Costas'),ex('Puxada neutra fechada','Costas',2)];
  const shoulders=()=>[ex('Elevação lateral','Ombros',2)];
