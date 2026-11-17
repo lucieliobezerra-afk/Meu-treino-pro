@@ -44,7 +44,7 @@ input,select{background:#0c1728;border:1px solid #344966;border-radius:10px;colo
   <p class="muted small">O app usa seus dados físicos, experiência, objetivo, frequência e prioridades para montar uma ficha editável.</p>
   <button class="btn full" onclick="generatePersonalPlan()">✦ Gerar meu treino personalizado</button>
  </div>
- <div id="workoutList"></div>
+ <div class="card"><div class="eyebrow">BIBLIOTECA DE EXERCÍCIOS</div><b>Escolha por grupo muscular</b><p class="muted small">Consulte opções e adicione ao treino que quiser.</p><label>Grupo muscular</label><select id="libraryGroup" onchange="renderLibrary()"><option value="">Todos os grupos</option><option>Peito</option><option>Costas</option><option>Ombros</option><option>Bíceps</option><option>Tríceps</option><option>Quadríceps</option><option>Posterior de coxa</option><option>Glúteos</option><option>Panturrilhas</option><option>Abdômen</option><option>Adutores e abdutores</option><option>Antebraço</option><option>Trapézio</option><option>Corpo todo e funcionais</option></select><label>Buscar exercício</label><input id="librarySearch" placeholder="Ex.: supino, remada, agachamento..." oninput="renderLibrary()"><div id="libraryResults" style="margin-top:10px"></div></div><div id="workoutList"></div>
  <button class="btn secondary full" style="margin:12px 0" onclick="createWorkout()">＋ Criar meu treino manualmente</button><div class="notice">Você pode começar com uma ficha vazia, adicionar os exercícios que quiser e alterar nome, séries, repetições e grupos musculares quando precisar.</div>
 </section>
 <section id="session" class="view">
@@ -101,6 +101,7 @@ const defaultPlan=[
  {id:'D',name:'Treino D — Pernas, peito superior e braços',desc:'Ênfase em posterior, glúteos, peitoral superior e braços',items:[
   ['Stiff com halteres','Posterior de coxa e glúteos','3','8–10'],['Mesa flexora','Posterior de coxa','3','10–12'],['Leg press','Quadríceps e glúteos','3','10–12'],['Panturrilha no leg press','Panturrilhas','3','12–15'],['Supino inclinado com halteres','Peito superior','3','8–10'],['Elevação lateral','Ombros','2','12–15'],['Tríceps na polia','Tríceps','2','10–12'],['Rosca Scott','Bíceps','2','10–12']]}
 ];
+const EXERCISE_LIBRARY={"Peito":["Supino reto com barra","Supino reto com halteres","Supino inclinado com barra","Supino inclinado com halteres","Supino declinado com barra","Supino máquina","Chest press","Crucifixo reto com halteres","Crucifixo inclinado com halteres","Crucifixo no peck deck","Crucifixo no cross","Crossover baixo para cima","Flexão de braços","Pullover com halter"],"Costas":["Puxada alta aberta","Puxada alta pronada","Puxada alta supinada","Puxada neutra fechada","Puxada unilateral na polia","Barra fixa pronada","Barra fixa supinada","Remada curvada com barra","Remada curvada com halteres","Remada baixa na polia","Remada unilateral com halter","Remada unilateral na polia","Remada cavalinho","Remada máquina","Pulldown com braços retos","Levantamento terra"],"Ombros":["Desenvolvimento com barra","Desenvolvimento com halteres","Desenvolvimento na máquina","Arnold press","Elevação lateral com halteres","Elevação lateral na polia","Elevação lateral na máquina","Elevação frontal com halteres","Crucifixo inverso com halteres","Crucifixo inverso na máquina","Face pull","Remada alta"],"Bíceps":["Rosca direta com barra","Rosca direta com halteres","Rosca alternada","Rosca martelo","Rosca inclinada","Rosca Scott com barra","Rosca Scott com halteres","Rosca concentrada","Rosca na polia baixa","Rosca inversa"],"Tríceps":["Tríceps na polia com barra","Tríceps corda","Tríceps testa com barra","Tríceps testa com halteres","Tríceps francês","Tríceps coice","Supino fechado","Mergulho nas paralelas","Mergulho no banco","Tríceps na máquina"],"Quadríceps":["Agachamento livre","Agachamento no Smith","Agachamento frontal","Agachamento goblet","Leg press 45°","Leg press horizontal","Cadeira extensora","Afundo com halteres","Passada caminhando","Agachamento búlgaro","Hack squat"],"Posterior de coxa":["Mesa flexora","Cadeira flexora","Flexora em pé unilateral","Stiff com barra","Stiff com halteres","Levantamento terra romeno","Good morning","Nordic curl"],"Glúteos":["Elevação pélvica com barra","Elevação pélvica na máquina","Glute bridge","Coice na polia","Abdução de quadril na máquina","Abdução de quadril na polia","Agachamento sumô","Afundo longo","Passada reversa"],"Panturrilhas":["Panturrilha em pé","Panturrilha sentado","Panturrilha no leg press","Panturrilha unilateral em pé","Panturrilha no Smith"],"Abdômen":["Abdominal crunch","Abdominal na polia","Abdominal infra","Elevação de pernas","Elevação de joelhos na barra","Prancha","Prancha lateral","Abdominal bicicleta","Abdominal máquina","Abdominal canivete","Dead bug"],"Adutores e abdutores":["Cadeira adutora","Cadeira abdutora","Adutor na polia","Abdução de quadril deitado"],"Antebraço":["Rosca de punho","Rosca de punho inversa","Farmer walk","Flexão de dedos com halter"],"Trapézio":["Encolhimento com halteres","Encolhimento com barra","Encolhimento na máquina","Face pull"],"Corpo todo e funcionais":["Burpee","Kettlebell swing","Thruster","Mountain climber","Battle rope","Caminhada do fazendeiro"]};
 let data=JSON.parse(localStorage.getItem('mtp_data')||'null')||{plan:defaultPlan,logs:[],weights:[],settings:{goal:4,name:'',objective:'Hipertrofia e perda de gordura',profile:{height:'',bodyWeight:'',bodyFat:'',goal:'Hipertrofia e perda de gordura',frequency:4,priorities:['Pernas','Peitoral superior','Ombros e braços'],biotype:'Não sei identificar',experience:'intermediario'}}};
 data.settings=data.settings||{};
 if(!data.settings.profile){data.settings.profile={height:'',bodyWeight:'',bodyFat:'',goal:'Hipertrofia e perda de gordura',frequency:4,priorities:['Pernas','Peitoral superior','Ombros e braços'],biotype:'Não sei identificar',experience:'intermediario'};data.settings.goal=4;data.settings.objective='Hipertrofia e perda de gordura';if(data.plan.length===3&&!data.plan.some(w=>w.id==='D'))data.plan.push(defaultPlan[3]);localStorage.setItem('mtp_data',JSON.stringify(data));}
@@ -130,7 +131,7 @@ function render(){const picker=document.getElementById('activeProfileSelect');if
  document.getElementById('weightHistory').innerHTML=data.weights.length?data.weights.slice(0,12).map(x=>`<div class="listitem row"><span>${new Date(x.date).toLocaleDateString('pt-BR')}</span><b>${x.value.toFixed(1)} kg</b></div>`).join(''):'<div class="empty">Registre seu peso para acompanhar a evolução.</div>';
  document.getElementById('planReview').innerHTML='<b>Prazo inicial sugerido: 6 a 8 semanas</b><p class="muted small">Reavalie ao final desse período. Não é obrigatório trocar a ficha se você ainda estiver evoluindo. Antecipe a revisão se houver dor ou recuperação ruim.</p><div class="muted small">Ficha gerada: '+(data.settings.generatedFromProfile?new Date(data.settings.generatedFromProfile).toLocaleDateString('pt-BR'):'data não registrada')+'</div>';
  const mh=document.getElementById('measureHistory');if(mh){const ms=data.measurements||[];mh.innerHTML=ms.slice(0,6).map(m=>'<div class="listitem"><b>'+new Date(m.date).toLocaleDateString('pt-BR')+'</b><div class="muted small">'+[['Cintura',m.waist],['Peito',m.chest],['Braço',m.arm],['Coxa',m.thigh]].filter(x=>x[1]).map(x=>x[0]+': '+x[1]+' cm').join(' • ')+'</div></div>').join('')||'<div class="empty">Suas medidas registradas aparecerão aqui.</div>';}
- renderLoadAdvice();
+ renderLoadAdvice();renderLibrary();
  document.getElementById('history').innerHTML=data.logs.length?data.logs.slice(0,10).map(x=>`<div class="listitem"><div class="row"><b>${x.name}</b><span class="muted small">${new Date(x.date).toLocaleDateString('pt-BR')}</span></div><div class="muted small">${x.entries.filter(e=>e.done).length} exercícios marcados como concluídos</div></div>`).join(''):'<div class="empty">Seus treinos finalizados aparecerão aqui.</div>';
  document.getElementById('userName').value=data.settings.name||'';document.getElementById('weeklyGoal').value=String(data.settings.goal||3);document.getElementById('goal').value=data.settings.objective||'Hipertrofia e perda de gordura';let p=data.settings.profile||{};document.getElementById('profileHeight').value=p.height||'';document.getElementById('profileBodyWeight').value=p.bodyWeight||'';document.getElementById('profileBodyFat').value=p.bodyFat||'';document.getElementById('profileGoal').value=p.goal||'Hipertrofia e perda de gordura';document.getElementById('profileFrequency').value=String(p.frequency||4);document.getElementById('profileBiotype').value=p.biotype||'Não sei identificar';document.getElementById('profileExperience').value=p.experience||'intermediario';document.querySelectorAll('.profilePriority').forEach(x=>x.checked=(p.priorities||['Pernas','Peitoral superior','Ombros e braços']).includes(x.value));
 }
@@ -216,14 +217,44 @@ function editWorkout(id){
  let desc=prompt('Descrição ou foco do treino:',w.desc);if(desc===null)return;
  w.name=name.trim();w.desc=desc.trim();persist();
 }
+function renderLibrary(){
+ const box=document.getElementById('libraryResults');if(!box)return;
+ const group=document.getElementById('libraryGroup')?.value||'';
+ const term=(document.getElementById('librarySearch')?.value||'').trim().toLocaleLowerCase('pt-BR');
+ const rows=Object.entries(EXERCISE_LIBRARY).filter(([g])=>!group||g===group).flatMap(([g,names])=>names.filter(n=>!term||n.toLocaleLowerCase('pt-BR').includes(term)).map(n=>({group:g,name:n})));
+ box.innerHTML=rows.length?rows.map(x=>'<div class="workout"><div style="min-width:0;flex:1"><b>'+esc(x.name)+'</b><div class="muted small">'+esc(x.group)+'</div></div><button class="btn secondary" onclick="addLibraryExercise('+JSON.stringify(x.group)+','+JSON.stringify(x.name)+')">＋ Adicionar</button></div>').join(''):'<div class="empty">Nenhum exercício encontrado.</div>';
+}
+function addLibraryExercise(group,name){
+ if(!data.plan.length){alert('Crie uma ficha primeiro.');return;}
+ const choices=data.plan.map((w,i)=>(i+1)+'. '+w.name).join('\n');
+ const answer=prompt('Em qual treino deseja adicionar?\n'+choices+'\nDigite o número:', '1');
+ if(answer===null)return;
+ const w=data.plan[Number(answer)-1];if(!w){alert('Número de treino inválido.');return;}
+ w.items.push([name,group,'3','8–12']);persist();alert(name+' adicionado a '+w.name+'.');
+}
 function addExercise(id){
- let w=findWorkout(id);if(!w)return;
- let name=prompt('Nome do exercício:');if(!name||!name.trim())return;
- let group=prompt('Grupo muscular:', 'Grupo muscular')??'';
- let sets=prompt('Quantas séries?', '3');if(sets===null)return;
- let reps=prompt('Faixa de repetições (ex.: 8–12):','8–12');if(reps===null)return;
- let n=Math.max(1,Math.min(10,parseInt(sets,10)||3));
- w.items.push([name.trim(),group.trim(),String(n),reps.trim()||'8–12']);persist();
+ const w=findWorkout(id);if(!w)return;
+ const groups=Object.keys(EXERCISE_LIBRARY);
+ const choice=prompt('Escolha o grupo muscular:\n'+groups.map((g,i)=>(i+1)+'. '+g).join('\n')+'\n\nDigite o número:');
+ if(choice===null)return;
+ const group=groups[Number(choice)-1];if(!group){alert('Grupo não encontrado.');return;}
+ const names=EXERCISE_LIBRARY[group];
+ const pick=prompt('Exercícios de '+group+':\n'+names.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nDigite o número:');
+ if(pick===null)return;
+ const name=names[Number(pick)-1];if(!name){alert('Exercício não encontrado.');return;}
+ w.items.push([name,group,'3','8–12']);persist();
+}
+function replaceExerciseFromLibrary(id,index){
+ const w=findWorkout(id),old=w?.items[index];if(!old)return;
+ const groups=Object.keys(EXERCISE_LIBRARY);
+ const choice=prompt('Escolha o grupo muscular para substituir '+old[0]+':\n'+groups.map((g,i)=>(i+1)+'. '+g).join('\n')+'\n\nDigite o número:');
+ if(choice===null)return;
+ const group=groups[Number(choice)-1];if(!group){alert('Grupo não encontrado.');return;}
+ const names=EXERCISE_LIBRARY[group];
+ const pick=prompt('Escolha o novo exercício:\n'+names.map((n,i)=>(i+1)+'. '+n).join('\n')+'\n\nDigite o número:');
+ if(pick===null)return;
+ const name=names[Number(pick)-1];if(!name){alert('Exercício não encontrado.');return;}
+ old[0]=name;old[1]=group;persist();alert('Exercício substituído! Séries e repetições foram mantidas.');
 }
 function editExercise(id,index){
  let w=findWorkout(id),x=w?.items[index];if(!x)return;
