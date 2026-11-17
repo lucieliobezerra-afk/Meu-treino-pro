@@ -274,7 +274,27 @@ function closeReplaceModal(){document.getElementById('replaceModal').style.displ
 function renderReplaceLibrary(){
  if(!replaceTarget)return;const group=replaceTarget.group,names=EXERCISE_LIBRARY[group]||[];
  const candidates=names.filter(n=>n!==replaceTarget.original),term=(document.getElementById('replaceSearch').value||'').trim().toLocaleLowerCase('pt-BR');
- const recommended=candidates.slice(0,2);
+ const family=(name)=>{
+ const n=name.toLocaleLowerCase('pt-BR');
+ if(group==='Peito')return /crucifixo|crossover|peck deck|pullover/.test(n)?'fly':'press';
+ if(group==='Costas')return /puxada|barra fixa|pulldown/.test(n)?'vertical':/terra/.test(n)?'hinge':'row';
+ if(group==='Ombros')return /lateral/.test(n)?'lateral':/frontal/.test(n)?'front':/inverso|face pull/.test(n)?'rear':'press';
+ if(group==='Quadríceps')return /extensora/.test(n)?'extension':'squat';
+ if(group==='Posterior de coxa')return /flexora|nordic/.test(n)?'curl':'hinge';
+ if(group==='Glúteos')return /abdução|abdutora/.test(n)?'abduction':/coice/.test(n)?'kickback':'hip';
+ if(group==='Panturrilhas')return /sentado/.test(n)?'seated':'standing';
+ if(group==='Abdômen')return /prancha|dead bug/.test(n)?'stability':/infra|elevação|joelhos/.test(n)?'raise':'crunch';
+ if(group==='Bíceps')return /martelo/.test(n)?'hammer':'curl';
+ if(group==='Tríceps')return /mergulho|supino fechado/.test(n)?'dip':'extension';
+ return group;
+ };
+ const targetFamily=family(replaceTarget.original),sameFamily=candidates.filter(n=>family(n)===targetFamily);
+ const pool=sameFamily.length>=2?sameFamily:candidates;
+ const originalMachine=/máquina|maquina|cadeira|mesa|leg press|peck deck/i.test(replaceTarget.original);
+ const recommended=pool.slice().sort((a,b)=>{
+  const aMachine=/máquina|maquina|cadeira|mesa|leg press|peck deck/i.test(a),bMachine=/máquina|maquina|cadeira|mesa|leg press|peck deck/i.test(b);
+  return Number(aMachine===originalMachine)-Number(bMachine===originalMachine);
+ }).slice(0,2);
  document.getElementById('replaceRecommended').innerHTML='<b>2 alternativas para substituir</b>'+recommended.map((n,i)=>'<div class="replace-option"><b>'+(i+1)+'. '+esc(n)+'</b><div class="muted small">Mesmo grupo muscular: '+esc(group)+'</div><button class="btn secondary full" onclick="chooseReplacement('+JSON.stringify(n)+')">Usar este exercício</button></div>').join('')+'<div class="small muted">As opções mantêm o foco muscular. Escolha a que use um equipamento disponível.</div>';
  const rows=names.filter(n=>n!==replaceTarget.original&&(!term||n.toLocaleLowerCase('pt-BR').includes(term)));
  document.getElementById('replaceResults').innerHTML=rows.length?rows.map(n=>'<div class="workout"><div style="flex:1;min-width:0"><b>'+esc(n)+'</b><div class="muted small">'+esc(group)+'</div></div><button class="btn secondary" onclick="chooseReplacement('+JSON.stringify(n)+')">Escolher</button></div>').join(''):'<div class="empty">Nenhum exercício encontrado neste grupo.</div>';
