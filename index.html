@@ -127,7 +127,7 @@ function generatePersonalPlan(){
  if(days!==4){alert('Este gerador está configurado para sua divisão atual de 4 dias. Ajuste a frequência do perfil para 4 dias para gerar esta ficha.');return;}
  const priorities=p.priorities||['Pernas','Peitoral superior','Ombros e braços'];
  const has=x=>priorities.includes(x);
- const sets=(base,group)=>String(base+(has(group)?1:0));
+ const sets=(base,group)=>String(base+((has('Pernas')&&/Quadríceps e glúteos|Posterior e glúteos/.test(group))||(has('Peitoral superior')&&group==='Peitoral superior')||(has('Ombros e braços')&&/Ombros|Bíceps|Tríceps/.test(group))||(has('Costas')&&group==='Costas')?1:0));
  const make=(name,desc,items)=>({id:name.split(' ')[1],name,desc,items});
  const plan=[
  make('Treino A — Superior 1','Peitoral superior, costas, ombros e braços',[
