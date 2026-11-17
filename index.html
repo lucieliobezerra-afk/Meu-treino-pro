@@ -339,7 +339,7 @@ async function submitAppLock(){
  const pin=document.getElementById('lockPin').value;
  const confirm=document.getElementById('lockConfirm').value;
  const error=document.getElementById('lockError');
- if(!/^\\d{4,6}$/.test(pin)){error.textContent='Use uma senha com 4 a 6 números.';return;}
+ if(!/^\d{4,6}$/.test(pin)){error.textContent='Use uma senha com 4 a 6 números.';return;}
  const saved=localStorage.getItem(APP_LOCK_KEY);
  if(lockMode==='setup'){
   if(pin!==confirm){error.textContent='As senhas não são iguais.';return;}
