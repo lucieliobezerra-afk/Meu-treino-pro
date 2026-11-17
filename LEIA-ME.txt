@@ -1,0 +1,21 @@
+# Meu Treino Pro
+
+Aplicativo web instalável (PWA) para iPhone, com fichas, registro de cargas/repetições, histórico, peso corporal e backup.
+
+## Como instalar no iPhone
+1. Publique os arquivos desta pasta em um endereço HTTPS (por exemplo, GitHub Pages).
+2. Abra o endereço publicado no Safari do iPhone.
+3. Toque em Compartilhar > Adicionar à Tela de Início > Adicionar.
+4. Abra pelo novo ícone "Meu Treino".
+
+## Importante
+- Os dados ficam armazenados localmente no navegador/aparelho.
+- Use "Configurações > Exportar meus dados" para fazer backup.
+- Não limpe os dados do Safari sem exportar o backup.
+- O app é um diário/organizador; ajuste exercícios com orientação profissional e não treine com dor.
+
+## Arquivos
+- index.html: aplicativo
+- manifest.webmanifest: configuração de instalação
+- sw.js: cache/offline
+- icon-192.png: ícone

@@ -1,0 +1,9 @@
+{
+  "name": "Meu Treino Pro",
+  "short_name": "Meu Treino",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#101a2b",
+  "description": "Seu diário de treino e evolução."
+}
