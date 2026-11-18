@@ -132,9 +132,15 @@ if(!multi||!multi.profiles||!Object.keys(multi.profiles).length){
 }
 if(!multi.profiles[multi.activeId])multi.activeId=Object.keys(multi.profiles)[0];
 data=multi.profiles[multi.activeId].data;
-// Recupera o nome que foi corrompido pela versão anterior do seletor de exercícios.
-for(const w of (data.plan||[]))for(const it of (w.items||[]))if(it[0]==='${esc(n)}'&&/peito|peitoral/i.test(String(it[1]||'')))it[0]='Supino máquina';
-multi.profiles[multi.activeId].data=data;
+// Corrige nomes gravados incorretamente por versões anteriores, em todos os perfis.
+for(const profile of Object.values(multi.profiles)){
+ const profileData=profile&&profile.data;
+ for(const w of (profileData?.plan||[]))for(const it of (w.items||[])){
+  const broken=String(it[0]||'');
+  if(/\$\{\s*esc\(n\)\s*\}/.test(broken)&&/peito|peitoral/i.test(String(it[1]||'')))it[0]='Supino máquina';
+ }
+}
+data=multi.profiles[multi.activeId].data;
 localStorage.setItem('mtp_multi',JSON.stringify(multi));
 localStorage.setItem('mtp_data',JSON.stringify(data));
 let current=null, currentEntries=[];
