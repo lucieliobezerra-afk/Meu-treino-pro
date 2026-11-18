@@ -505,9 +505,13 @@ supabaseClient.auth.onAuthStateChange((event)=>{
  if(event==='PASSWORD_RECOVERY')enableRecoveryMode();
 });
 async function initAuth(){
- if(new URLSearchParams(location.hash.replace(/^#/,'')).get('type')==='recovery'){enableRecoveryMode();return;}
  const {data:sessionData}=await supabaseClient.auth.getSession();
- if(sessionData.session){await openUserAccount(sessionData.session.user);}
+ if(sessionData.session){await openUserAccount(sessionData.session.user);return;}
+ loggedUser=null;
+ document.getElementById('authScreen').style.display='none';
+ const accountLabel=document.getElementById('accountEmail');if(accountLabel)accountLabel.textContent='Modo livre — dados salvos neste aparelho';
+ const signOutButton=document.querySelector('.account-bar button');if(signOutButton)signOutButton.style.display='none';
+ render();
 }
 initAuth();
 </script>
