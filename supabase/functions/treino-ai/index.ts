@@ -1,5 +1,3 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -17,21 +15,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Método não permitido." }, 405);
 
-  const authorization = req.headers.get("Authorization");
-  if (!authorization?.startsWith("Bearer ")) return json({ error: "Faça login para usar o assistente." }, 401);
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  // O Meu Treino Pro funciona sem conta; por isso esta função não valida sessão.
   const openaiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!supabaseUrl || !supabaseAnonKey || !openaiKey) {
+  if (!openaiKey) {
     return json({ error: "O assistente ainda não foi configurado no servidor." }, 503);
   }
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authorization } },
-  });
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return json({ error: "Sessão inválida. Entre novamente na sua conta." }, 401);
 
   let body: { messages?: Array<{ role: string; content: string }>; context?: string };
   try {
