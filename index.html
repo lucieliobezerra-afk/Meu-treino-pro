@@ -415,6 +415,7 @@ async function signIn(){
 async function signOut(){await supabaseClient.auth.signOut();loggedUser=null;document.getElementById('authScreen').style.display='flex';authMessage('Você saiu da sua conta.');}
 async function openUserAccount(user){
  loggedUser=user;
+ loadAiHistory();
  const localKey='mtp_user_'+user.id;
  const {data:remote,error}=await supabaseClient.from('user_workout_data').select('data').eq('user_id',user.id).maybeSingle();
  if(error){authMessage('Não foi possível carregar seus dados: '+error.message);return;}
