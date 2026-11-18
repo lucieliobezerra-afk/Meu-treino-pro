@@ -297,9 +297,9 @@ function renderReplaceLibrary(){
   const aMachine=/máquina|maquina|cadeira|mesa|leg press|peck deck/i.test(a),bMachine=/máquina|maquina|cadeira|mesa|leg press|peck deck/i.test(b);
   return Number(aMachine===originalMachine)-Number(bMachine===originalMachine);
  }).slice(0,2);
- document.getElementById('replaceRecommended').innerHTML='<b>2 alternativas para substituir</b>'+recommended.map((n,i)=>'<div class="replace-option"><b>'+(i+1)+'. '+esc(n)+'</b><div class="muted small">Mesmo grupo muscular: '+esc(group)+'</div><button class="btn secondary full" onclick="chooseReplacement('+JSON.stringify(n)+')">Usar este exercício</button></div>').join('')+'<div class="small muted">As opções mantêm o foco muscular. Escolha a que use um equipamento disponível.</div>';
+ document.getElementById('replaceRecommended').innerHTML='<b>2 alternativas para substituir</b>'+recommended.map((n,i)=>'<div class="replace-option"><b>'+(i+1)+'. '+esc(n)+'</b><div class="muted small">Mesmo grupo muscular: '+esc(group)+'</div><button class="btn secondary full" data-replacement="${esc(n)}" onclick="chooseReplacement(this.dataset.replacement)">Usar este exercício</button></div>').join('')+'<div class="small muted">As opções mantêm o foco muscular. Escolha a que use um equipamento disponível.</div>';
  const rows=names.filter(n=>n!==replaceTarget.original&&(!term||n.toLocaleLowerCase('pt-BR').includes(term)));
- document.getElementById('replaceResults').innerHTML=rows.length?rows.map(n=>'<div class="workout"><div style="flex:1;min-width:0"><b>'+esc(n)+'</b><div class="muted small">'+esc(group)+'</div></div><button class="btn secondary" onclick="chooseReplacement('+JSON.stringify(n)+')">Escolher</button></div>').join(''):'<div class="empty">Nenhum exercício encontrado neste grupo.</div>';
+ document.getElementById('replaceResults').innerHTML=rows.length?rows.map(n=>'<div class="workout"><div style="flex:1;min-width:0"><b>'+esc(n)+'</b><div class="muted small">'+esc(group)+'</div></div><button class="btn secondary" data-replacement="${esc(n)}" onclick="chooseReplacement(this.dataset.replacement)">Escolher</button></div>').join(''):'<div class="empty">Nenhum exercício encontrado neste grupo.</div>';
 }
 function chooseReplacement(name){
  if(!replaceTarget)return;const w=findWorkout(replaceTarget.id),old=w?.items[replaceTarget.index];if(!old)return;
